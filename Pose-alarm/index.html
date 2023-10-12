@@ -6,19 +6,26 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Exercise Alarm Clock</title>
   <script src="https://unpkg.com/ml5@latest/dist/ml5.min.js"></script>
+  <!-- <script src="https://unpkg.com/@tensorflow/tfjs"></script>
+  <script src="https://unpkg.com/@tensorflow-models/posenet"></script> -->
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/posenet"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/knn-classifier"></script>
   <link rel="stylesheet" href="css/style.css">
 </head>
 
 <body>
   <div class="grid">
     <video id="video" class="video" width="640" height="480" autoplay playsinline></video>
-    <canvas id="canvas" class="canvas"></canvas>
+    <canvas id="canvas" class="canvas" width="640" height="480"></canvas>
   </div>
-  <button class="addData">Add Exercise Data</button>
+  <button class="addData">Add Squat Data</button>
   <input class="label" type="text" placeholder="Enter Exercise Label">
-  <button class="classify">Classify</button>
-  <div class="status">Alarm Status</div>
+  <button class="classifySquat">Classify Squat</button>
+  <button class="resetSquatCount">Reset Squat Count</button>
+  <div class="status">Squat Count</div>
+  <div class="notification"></div>
 
+  
   <script src="js/script.js"></script>
 </body>
 

@@ -6,15 +6,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Exercise Alarm Clock</title>
   <script src="https://unpkg.com/ml5@latest/dist/ml5.min.js"></script>
+  <link rel="stylesheet" href="css/style.css">
 </head>
 
 <body>
-  <video class="video" playsinline></video>
+  <div class="grid">
+    <video id="video" class="video" width="640" height="480" autoplay playsinline></video>
+    <canvas id="canvas" class="canvas"></canvas>
+  </div>
   <button class="addData">Add Exercise Data</button>
   <input class="label" type="text" placeholder="Enter Exercise Label">
   <button class="classify">Classify</button>
   <div class="status">Alarm Status</div>
-  <canvas class="canvas"></canvas>
 
   <script src="js/script.js"></script>
 </body>

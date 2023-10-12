@@ -1,20 +1,41 @@
 let knnClassifier;
 let inputs;
+let video;
+let canvas;
+let ctx;
+let poseNet;
+let currentExercise = ""; // Track the current exercise (either "squats" or "")
+
+const keypointNames = [
+  "leftShoulder",
+  "leftElbow",
+  "leftWrist",
+  "rightShoulder",
+  "rightElbow",
+  "rightWrist",
+  "nose",
+  "leftEye",
+  "rightEye",
+];
 
 const init = async () => {
   knnClassifier = ml5.KNNClassifier();
 
-  const $video = document.querySelector(".video");
+  video = document.querySelector(".video");
   const stream = await navigator.mediaDevices.getUserMedia({
     video: true,
     audio: false,
   });
-  $video.srcObject = stream;
-  $video.play();
+  video.srcObject = stream;
+  video.play();
 
-  // Initialize PoseNet
-  const poseNet = ml5.poseNet($video, modelReady);
-  poseNet.on("pose", resultHandler); // Listen for pose detection
+  canvas = document.querySelector(".canvas");
+  canvas.width = video.width;
+  canvas.height = video.height;
+  ctx = canvas.getContext("2d");
+
+  poseNet = ml5.poseNet(video, modelReady);
+  poseNet.on("pose", resultHandler);
 
   const $addDataButton = document.querySelector(".addData");
   $addDataButton.addEventListener("click", addDataHandler);
@@ -29,22 +50,26 @@ const classifyHandler = () => {
 
 const classifyResultHandler = (error, result) => {
   if (error) return console.error(error);
-  console.log(result.label);
-  document.querySelector(".status").textContent = result.label;
+  const exerciseLabel = result.label;
 
-  // Check if the exercise label matches the expected exercise
-  if (result.label === "pushups" || result.label === "squats") {
-    // Execute alarm turn-off logic here (e.g., stop alarm sound)
-    // Implement exercise validation and count here
-    // If the required exercise count is reached, turn off the alarm.
+  if (exerciseLabel === "squats") {
+    if (currentExercise !== "squats") {
+      currentExercise = "squats";
+      console.log("Squats started.");
+    } else {
+      console.log("Squat counted.");
+    }
   }
+
+  document.querySelector(
+    ".status"
+  ).textContent = `Current Exercise: ${currentExercise}`;
 };
 
 const addDataHandler = () => {
   const $label = document.querySelector(".label");
   const output = $label.value;
 
-  // Check if the exercise label is valid ('pushups' or 'squats')
   if (output === "pushups" || output === "squats") {
     knnClassifier.addExample(inputs, output);
   } else {
@@ -55,17 +80,37 @@ const addDataHandler = () => {
 const resultHandler = (poses) => {
   if (!poses.length) return;
 
-  // Use the first detected pose for input data
   const pose = poses[0].pose;
-  const keypoints = pose.keypoints.map((keypoint) => [
-    keypoint.position.x,
-    keypoint.position.y,
-  ]);
-  inputs = keypoints.flat();
+  const keypoints = pose.keypoints;
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  ctx.fillStyle = "red";
+  ctx.strokeStyle = "white";
+  ctx.lineWidth = 2;
+
+  for (const keypoint of keypoints) {
+    const keyPointNeedsTobeRendered = keypointNames.includes(keypoint.part);
+    if (keyPointNeedsTobeRendered) {
+      const { x, y } = keypoint.position;
+      if (keypoint.part === "nose") {
+        // console.log(x, y);
+      }
+      ctx.beginPath();
+      ctx.arc(x, y, 5, 0, 2 * Math.PI);
+      ctx.fill();
+      ctx.stroke();
+    }
+  }
+
+  inputs = keypoints
+    .filter((kp) => keypointNames.includes(kp.part))
+    .map((keypoint) => [keypoint.position.x, keypoint.position.y]);
 };
 
 const modelReady = () => {
   console.log("PoseNet model loaded");
+  poseNet.multiPose(video);
 };
 
 init();

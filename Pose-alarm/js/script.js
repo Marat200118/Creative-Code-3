@@ -3,9 +3,7 @@ let video;
 let canvas;
 let ctx;
 let poseNet;
-let squatCount = 0;
-let lastPose = 0;
-const exerciseLabel = "squat down";
+let poses = [];
 
 const keypointNames = [
   "leftShoulder",
@@ -25,152 +23,122 @@ const keypointNames = [
   "rightAnkle",
 ];
 
-let pose;
-
 const init = async () => {
   knnClassifier = ml5.KNNClassifier();
+  video = document.querySelector("#video");
+  canvas = document.querySelector("#canvas");
+  ctx = canvas.getContext("2d");
 
-  video = document.querySelector(".video");
   const stream = await navigator.mediaDevices.getUserMedia({
     video: true,
     audio: false,
   });
+
   video.srcObject = stream;
   video.play();
 
-  canvas = document.querySelector(".canvas");
   video.addEventListener("loadedmetadata", function () {
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
   });
-  ctx = canvas.getContext("2d");
 
   poseNet = ml5.poseNet(video, modelReady);
   poseNet.on("pose", resultHandler);
-
-  updateCountDisplay();
-
-  const $addDataButton = document.querySelector(".addData");
-  $addDataButton.addEventListener("click", addSquatDataHandler);
-
-  const $resetSquatCountButton = document.querySelector(".resetSquatCount");
-  $resetSquatCountButton.addEventListener("click", resetSquatCount);
-
-  const $classifySquatButton = document.querySelector(".classifySquat");
-  $classifySquatButton.addEventListener("click", classifySquatHandler);
+  createButtons();
+  updateCounts();
 };
 
-const updateCountDisplay = () => {
-  document.querySelector(".status").textContent = `Squats: ${squatCount}`;
+const addData = (label) => {
+  const poseArray = poses[0].pose.keypoints.map((p) => [
+    p.score,
+    p.position.x,
+    p.position.y,
+  ]);
+  knnClassifier.addExample(poseArray, label);
+  updateCounts();
 };
 
-const classifySquatHandler = () => {
-  classifySquatPosition();
-};
-
-const classifySquatPosition = () => {
-    // if (pose) {
-    //   const numExamples = knnClassifier.getNumExamples();
-    //   if (numExamples <= 0) {
-    //     console.log("No examples in any label");
-    //     return;
-    //   }
-    // }
-  
-  if (pose) {
-    const inputs = keypointNames.map((part) =>
-      pose[part] ? [pose[part].x, pose[part].y] : [0, 0]
-    );
-
-    knnClassifier.classify(inputs, (error, result) => {
-      if (error) {
-        console.error(error);
-        return;
-      }
-
-      // console.log("Classification result:", result);
-
-      const squatLabel = result.label;
-
-      if (squatLabel === exerciseLabel) {
-        if (lastPose === 1) {
-          squatCount++;
-          lastPose = 0;
-          updateCountDisplay();
-        }
-      } else {
-        lastPose = 1;
-      }
-    });
+const classify = () => {
+  if (knnClassifier.getNumLabels() > 0) {
+    const poseArray = poses[0].pose.keypoints.map((p) => [
+      p.score,
+      p.position.x,
+      p.position.y,
+    ]);
+    knnClassifier.classify(poseArray, gotResults);
   }
 };
 
-const addSquatDataHandler = () => {
-  console.log("Adding data for label:", exerciseLabel);
-  if (!pose) {
-    console.log("No pose detected.");
+const createButtons = () => {
+  document
+    .getElementById("addClassA")
+    .addEventListener("click", () => addData("A"));
+  document
+    .getElementById("addClassB")
+    .addEventListener("click", () => addData("B"));
+  document
+    .getElementById("resetA")
+    .addEventListener("click", () => clearLabel("A"));
+  document
+    .getElementById("resetB")
+    .addEventListener("click", () => clearLabel("B"));
+  document.getElementById("buttonPredict").addEventListener("click", classify);
+  document.getElementById("clearAll").addEventListener("click", clearAllLabels);
+};
+
+const gotResults = (error, result) => {
+  if (error) {
+    console.error(error);
     return;
   }
-  if (pose) {
-    const exerciseLabelInput = document.querySelector(".label");
-    const inputLabel = exerciseLabelInput.value;
-    const inputs = keypointNames.map((part) =>
-      pose[part] ? [pose[part].x, pose[part].y] : [0, 0]
-    );
-
-    console.log(
-      `Added data for label: ${exerciseLabel}, with keypoints:`,
-      inputs
-    );
-
-    knnClassifier.addExample(inputs, exerciseLabel);
-
-    const dataset = knnClassifier.getClassifierDataset();
-    if (dataset) {
-      Object.keys(dataset).forEach((key) => {
-        console.log(`Label: ${key}`);
-        const data = dataset[key].dataSync();
-        console.log("Data:", Array.from(data));
-      });
-    }
-
-    const notification = document.querySelector(".notification");
-    notification.textContent = `Data added for ${exerciseLabel}!`;
-    setTimeout(() => {
-      notification.textContent = ""; // Clear the message after 3 seconds
-    }, 3000);
-  }
+  const confidences = result.confidencesByLabel;
+  document.querySelector("#result").textContent = result.label;
+  document.querySelector("#confidence").textContent = `${(
+    confidences[result.label] * 100
+  ).toFixed(2)}%`;
+  document.getElementById("confidenceA").textContent = `${(
+    confidences["A"] * 100
+  ).toFixed(2)}%`;
+  document.getElementById("confidenceB").textContent = `${(
+    confidences["B"] * 100
+  ).toFixed(2)}%`;
+  classify(); // keep classifying
 };
 
-const resetSquatCount = () => {
-  squatCount = 0;
-  updateCountDisplay();
+const updateCounts = () => {
+  const counts = knnClassifier.getCountByLabel();
+  document.getElementById("exampleA").textContent = counts["A"] || 0;
+  document.getElementById("exampleB").textContent = counts["B"] || 0;
 };
 
-const resultHandler = (poses) => {
-  if (!poses.length) return;
+const clearLabel = (classLabel) => {
+  knnClassifier.clearLabel(classLabel);
+  updateCounts();
+};
+ 
+const clearAllLabels = () => {
+  knnClassifier.clearAllLabels();
+  updateCounts();
+};
 
-  pose = poses[0].pose;
-  const keypoints = pose.keypoints;
-
+const resultHandler = (results) => {
+  if (!results.length) return;
+  poses = results;
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.fillStyle = "red";
   ctx.strokeStyle = "white";
   ctx.lineWidth = 2;
+  const keypoints = results[0].pose.keypoints;
 
-  for (const keypoint of keypoints) {
-    const keyPointNeedsToBeRendered = keypointNames.includes(keypoint.part);
-    if (keyPointNeedsToBeRendered) {
-      const { x, y } = keypoint.position;
+  keypoints.forEach((keypoint) => {
+    if (keypointNames.includes(keypoint.part)) {
       ctx.beginPath();
-      ctx.arc(x, y, 5, 0, 2 * Math.PI);
+      ctx.arc(keypoint.position.x, keypoint.position.y, 5, 0, 2 * Math.PI);
       ctx.fill();
       ctx.stroke();
     }
-  }
+  });
 };
-
-
 
 const modelReady = () => {
   console.log("PoseNet model loaded");

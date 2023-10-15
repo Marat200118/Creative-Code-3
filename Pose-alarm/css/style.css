@@ -10,3 +10,13 @@
   grid-row: 1;
   grid-column: 1;
 }
+
+.feedback {
+  padding: 10px;
+  background-color: #f1f1f1;
+  margin-top: 20px;
+  border: 1px solid #ccc;
+  display: none; 
+}
+
+  

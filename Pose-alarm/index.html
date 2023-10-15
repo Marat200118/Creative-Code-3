@@ -14,23 +14,26 @@
     <video id="video" width="640" height="480" autoplay playsinline></video>
     <canvas id="canvas" width="640" height="480"></canvas>
   </div>
-  <button id="addClassA">Add to Class A (Squat)</button>
-  <button id="resetA">Reset Class A</button>
-  <p><span id="exampleA">0</span> A examples</p>
-  <p>| Confidence in A is: <span id="confidenceA">0</span></p>
+  <div>
+    Squat Count: <span id="squatCounter">0</span>
+  </div>
+  <button id="addClassA">Add to Class "Squat"</button>
+  <button id="resetA">Reset Class "Squat"</button>
+  <p><span id="exampleA">0</span> "Squat"</p>
+  <p>| Confidence in "Squat" is: <span id="confidenceA">0</span></p>
 
-  <button id="addClassB">Add to Class B (Standing)</button>
-  <button id="resetB">Reset Class B</button>
-  <p><span id="exampleB">0</span> B examples</p>
-  <p>| Confidence in B is: <span id="confidenceB">0</span></p>
+  <button id="addClassB">Add to Class "Standing"</button>
+  <button id="resetB">Reset Class "Standing"</button>
+  <p><span id="exampleB">0</span> "Standing" examples</p>
+  <p>| Confidence in "Standing" is: <span id="confidenceB">0</span></p>
 
   <button id="buttonPredict">Start predicting!</button>
   <button id="clearAll">Clear all classes</button>
 
-  <p>
+  <!-- <p>
     KNN Classifier labeled this as Class: <span id="result">...</span>
     with a confidence of <span id="confidence">...</span>
-  </p>
+  </p> -->
 
   <script src="js/script.js"></script>
 </body>

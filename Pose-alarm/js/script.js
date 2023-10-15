@@ -4,6 +4,8 @@ let canvas;
 let ctx;
 let poseNet;
 let poses = [];
+let squatState = "standing";
+let squatCount = 0;
 
 const keypointNames = [
   "leftShoulder",
@@ -92,6 +94,23 @@ const gotResults = (error, result) => {
     return;
   }
   const confidences = result.confidencesByLabel;
+  const currentPose = result.label;
+  const confidenceValue = confidences[currentPose] * 100;
+
+  if (currentPose === "B" && confidenceValue === 100) {
+    squatState = "squatting";
+  }
+
+  if (
+    currentPose === "A" &&
+    confidenceValue === 100 &&
+    squatState === "squatting"
+  ) {
+    squatState = "standing";
+    squatCount++;
+    document.querySelector("#squatCounter").textContent = squatCount;
+  }
+
   document.querySelector("#result").textContent = result.label;
   document.querySelector("#confidence").textContent = `${(
     confidences[result.label] * 100
@@ -102,7 +121,7 @@ const gotResults = (error, result) => {
   document.getElementById("confidenceB").textContent = `${(
     confidences["B"] * 100
   ).toFixed(2)}%`;
-  classify(); // keep classifying
+  classify();
 };
 
 const updateCounts = () => {
@@ -115,7 +134,7 @@ const clearLabel = (classLabel) => {
   knnClassifier.clearLabel(classLabel);
   updateCounts();
 };
- 
+
 const clearAllLabels = () => {
   knnClassifier.clearAllLabels();
   updateCounts();

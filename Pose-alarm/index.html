@@ -8,41 +8,97 @@
   <script src="https://unpkg.com/ml5@latest/dist/ml5.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.2/FileSaver.min.js"></script>
   <link rel="stylesheet" href="css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,500;0,600;0,700;0,800;1,600;1,700&family=Oswald:wght@200;300;400;500;600;700&display=swap"
+    rel="stylesheet">
+
 </head>
 
 <body>
-  <div class="grid">
-    <video id="video" width="640" height="480" autoplay playsinline></video>
-    <canvas id="canvas" width="640" height="480"></canvas>
+
+  <div class="header-container">
+    <div class="heading-logo">
+      <h1>Get up, you lazy Fu*k</h1>
+    </div>
+
+    <div class="current-time">
+      <h2>15:45</h2>
+    </div>
+
+    <div class="alarm">
+      <label for="alarmTime">Alarm Time (24-hour format):</label>
+      <input type="time" id="alarmTime">
+      <audio id="alarmSound" src="./assets/alarm.wav" preload="auto"></audio>
+      <button onclick="setAlarm()">Set Alarm</button>
+    </div>
   </div>
-  <div>
-    Squat Count: <span id="squatCounter">0</span>
+
+  <div class="main-container">
+    <div class="exercise-and-instructions">
+      <div class="exercise-heading">
+        <h2>Choose your activity</h2>
+      </div>
+      <div class="activities">
+        <div class="activity-item">
+          <div class="activity-item-image">
+            <img src="./assets/squat.png" alt="squat">
+          </div>
+          <div class="activity-item-text">
+            <h3>Squat</h3>
+            <p>Stand with your feet shoulder-width apart. Start by doing a regular squat, then engage your core and jump
+              up explosively. When you land, lower your body back into the squat position to complete one rep. Land as
+              quietly as possible, which requires control.</p>
+          </div>
+        </div>
+        <div class="activity-item">
+          <div class="activity-item-image">
+            <img src="./assets/push-up.png" alt="push-up">
+          </div>
+          <div class="activity-item-text">
+            <h3>Push-ups</h3>
+            <p>Stand with your feet shoulder-width apart. Start by doing a regular squat, then engage your core and jump
+              up explosively. When you land, lower your body back into the squat position to complete one rep. Land as
+              quietly as possible, which requires control.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="video-and-model">
+      <div class="grid">
+        <video id="video" width="640" height="480" autoplay playsinline></video>
+        <canvas id="canvas" width="640" height="480"></canvas>
+      </div>
+      <div>
+        Squat Count: <span id="squatCounter">0</span>
+      </div>
+      <button id="addClassA">Add to Class "Squat"</button>
+      <button id="resetA">Reset Class "Squat"</button>
+      <p><span id="exampleA">0</span> "Squat" examples</p>
+      <p>| Confidence in "Squat" is: <span id="confidenceA">0</span></p>
+        
+      <button id="addClassB">Add to Class "Standing"</button>
+      <button id="resetB">Reset Class "Standing"</button>
+      <p><span id="exampleB">0</span> "Standing" examples</p>
+      <p>| Confidence in "Standing" is: <span id="confidenceB">0</span></p>
+        
+      <button id="buttonPredict">Start predicting!</button>
+      <button id="clearAll">Clear all classes</button>
+      <button id="saveModel">Save Model</button>
+      <button id="loadModel">Load Model</button>
+        
+      <p>
+        KNN Classifier labeled this as Class: <span id="result">...</span>
+        with a confidence of <span id="confidence">...</span>
+      </p>
+    </div>
   </div>
-  <button id="addClassA">Add to Class "Squat"</button>
-  <button id="resetA">Reset Class "Squat"</button>
-  <p><span id="exampleA">0</span> "Squat" examples</p>
-  <p>| Confidence in "Squat" is: <span id="confidenceA">0</span></p>
-
-  <button id="addClassB">Add to Class "Standing"</button>
-  <button id="resetB">Reset Class "Standing"</button>
-  <p><span id="exampleB">0</span> "Standing" examples</p>
-  <p>| Confidence in "Standing" is: <span id="confidenceB">0</span></p>
-
-  <button id="buttonPredict">Start predicting!</button>
-  <button id="clearAll">Clear all classes</button>
-  <button id="saveModel">Save Model</button>
-  <button id="loadModel">Load Model</button>
-
-  <p>
-    KNN Classifier labeled this as Class: <span id="result">...</span>
-    with a confidence of <span id="confidence">...</span>
-  </p>
 
   <script src="js/script.js"></script>
 </body>
 
 </html>
-
 
 <!-- <script src="https://unpkg.com/@tensorflow/tfjs"></script>
     <script src="https://unpkg.com/@tensorflow-models/posenet"></script>

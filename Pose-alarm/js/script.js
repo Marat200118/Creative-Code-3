@@ -6,6 +6,7 @@ let poseNet;
 let poses = [];
 let squatState = "standing";
 let squatCount = 0;
+let alarmTimeout;
 
 const init = async () => {
   knnClassifier = ml5.KNNClassifier();
@@ -176,3 +177,38 @@ const updateConfidenceDisplays = (result) => {
 };
 
 init();
+
+
+
+
+const setAlarm = () => {
+  const alarmInput = document.getElementById("alarmTime");
+  const alarmTime = new Date();
+  const [hour, minute] = alarmInput.value.split(":").map(Number);
+  alarmTime.setHours(hour);
+  alarmTime.setMinutes(minute);
+  alarmTime.setSeconds(0);
+  alarmTime.setMilliseconds(0);
+
+  const currentTime = new Date();
+  if (alarmTime < currentTime) {
+    alarmTime.setDate(alarmTime.getDate() + 1); // set for next day if time already passed
+  }
+
+  const durationUntilAlarm = alarmTime - currentTime;
+  console.log(durationUntilAlarm);
+
+  // Clear previous alarms
+  if (alarmTimeout) {
+    clearTimeout(alarmTimeout);
+  }
+
+  alarmTimeout = setTimeout(() => {
+    const alarmSound = document.getElementById("alarmSound");
+    alarmSound.play();
+
+    // Here you can start the video or any other functionality you want to trigger with the alarm.
+  }, durationUntilAlarm);
+};
+
+document.getElementById("alarmTime").addEventListener("change", setAlarm);

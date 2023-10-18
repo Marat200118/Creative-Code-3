@@ -1,3 +1,96 @@
+:root {
+  --oswald: 'Oswald', sans-serif;
+  --montserrat: 'Montserrat', sans-serif;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: var(--montserrat);
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.5;
+  color: #212529;
+  text-align: left;
+  background-color: #f8f9fa;
+}
+
+.header-container {
+  background-color: #212529;
+  color: #f8f9fa;
+  padding: 2rem;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-around;
+  gap: 15rem;
+}
+
+h1 {
+  font-family: var(--oswald);
+  font-size: 2.5rem;
+  font-weight: 500;
+  margin: 0;
+}
+
+h2 {
+  font-family: var(--oswald);
+  font-size: 1.5rem;
+  font-weight: 500;
+  margin: 0;
+}
+
+p {
+  font-family: var(--montserrat);
+  font-size: 1rem;
+  font-weight: 400;
+  margin: 0;
+}
+
+label {
+  font-family: var(--montserrat);
+  font-size: 1rem;
+  font-weight: 400;
+  margin: 0;
+}
+
+.main-container {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  margin-top: 4rem;
+  justify-items: center;
+}
+
+.exercise-heading {
+  display: flex;
+  justify-content: center;
+}
+
+.activity-item-image img {
+  width: 10rem;
+}
+
+.activity-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  width: 40%;
+  border: 1px solid #ccc;
+  padding: 1rem;
+}
+
+.activities {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  width: 100%;
+  margin-top: 2rem;
+}
+
 .grid {
   display: grid;
   grid-template-columns: 1fr;
@@ -19,4 +112,3 @@
   display: none; 
 }
 
-  

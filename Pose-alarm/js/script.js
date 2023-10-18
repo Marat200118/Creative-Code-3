@@ -7,6 +7,7 @@ let poses = [];
 let squatState = "standing";
 let squatCount = 0;
 let alarmTimeout;
+let countdownInterval;
 
 const init = async () => {
   knnClassifier = ml5.KNNClassifier();
@@ -178,9 +179,6 @@ const updateConfidenceDisplays = (result) => {
 
 init();
 
-
-
-
 const setAlarm = () => {
   const alarmInput = document.getElementById("alarmTime");
   const alarmTime = new Date();
@@ -191,14 +189,44 @@ const setAlarm = () => {
   alarmTime.setMilliseconds(0);
 
   const currentTime = new Date();
-  if (alarmTime < currentTime) {
+  if (alarmTime <= currentTime) {
     alarmTime.setDate(alarmTime.getDate() + 1); // set for next day if time already passed
   }
+
+  const displayTimeUntilAlarm = () => {
+    const currentTime = new Date();
+    const difference = alarmTime - currentTime;
+    if (difference <= 0) {
+      document.querySelector(".current-time h2").innerText = "ALARM!";
+      clearInterval(countdownInterval);
+      return;
+    }
+    const hours = Math.floor(difference / 1000 / 60 / 60);
+    const minutes = Math.floor((difference / 1000 / 60) % 60);
+    const seconds = Math.floor((difference / 1000) % 60);
+
+    const timeString = `${String(hours).padStart(2, "0")}:${String(
+      minutes
+    ).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+
+    document.querySelector(".current-time h2").innerText = timeString;
+  };
+
+  if (countdownInterval) {
+    clearInterval(countdownInterval);
+  }
+
+  countdownInterval = setInterval(displayTimeUntilAlarm, 1000);
+
+  const feedback = document.getElementById("feedback");
+  feedback.style.display = "block";
+  setTimeout(() => {
+    feedback.style.display = "none";
+  }, 3000);
 
   const durationUntilAlarm = alarmTime - currentTime;
   console.log(durationUntilAlarm);
 
-  // Clear previous alarms
   if (alarmTimeout) {
     clearTimeout(alarmTimeout);
   }
@@ -206,7 +234,6 @@ const setAlarm = () => {
   alarmTimeout = setTimeout(() => {
     const alarmSound = document.getElementById("alarmSound");
     alarmSound.play();
-
     // Here you can start the video or any other functionality you want to trigger with the alarm.
   }, durationUntilAlarm);
 };

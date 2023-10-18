@@ -106,9 +106,21 @@ label {
 
 .feedback {
   padding: 10px;
-  background-color: #f1f1f1;
   margin-top: 20px;
-  border: 1px solid #ccc;
+  color: green;
   display: none; 
 }
 
+
+.alarm label {
+    display: block;
+    margin-bottom: 10px;
+}
+
+.alarm input {
+    padding: 5px 10px;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    margin-right: 10px;
+}

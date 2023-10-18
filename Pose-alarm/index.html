@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Exercise Alarm Clock</title>
   <script src="https://unpkg.com/ml5@latest/dist/ml5.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.2/FileSaver.min.js"></script>
   <link rel="stylesheet" href="css/style.css">
 </head>
 
@@ -19,7 +20,7 @@
   </div>
   <button id="addClassA">Add to Class "Squat"</button>
   <button id="resetA">Reset Class "Squat"</button>
-  <p><span id="exampleA">0</span> "Squat"</p>
+  <p><span id="exampleA">0</span> "Squat" examples</p>
   <p>| Confidence in "Squat" is: <span id="confidenceA">0</span></p>
 
   <button id="addClassB">Add to Class "Standing"</button>
@@ -29,11 +30,13 @@
 
   <button id="buttonPredict">Start predicting!</button>
   <button id="clearAll">Clear all classes</button>
+  <button id="saveModel">Save Model</button>
+  <button id="loadModel">Load Model</button>
 
-  <!-- <p>
+  <p>
     KNN Classifier labeled this as Class: <span id="result">...</span>
     with a confidence of <span id="confidence">...</span>
-  </p> -->
+  </p>
 
   <script src="js/script.js"></script>
 </body>

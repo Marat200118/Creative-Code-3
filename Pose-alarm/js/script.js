@@ -7,24 +7,6 @@ let poses = [];
 let squatState = "standing";
 let squatCount = 0;
 
-const keypointNames = [
-  "leftShoulder",
-  "leftElbow",
-  "leftWrist",
-  "rightShoulder",
-  "rightElbow",
-  "rightWrist",
-  "nose",
-  "leftEye",
-  "rightEye",
-  "leftHip",
-  "rightHip",
-  "leftKnee",
-  "rightKnee",
-  "leftAnkle",
-  "rightAnkle",
-];
-
 const init = async () => {
   knnClassifier = ml5.KNNClassifier();
   video = document.querySelector("#video");
@@ -61,13 +43,19 @@ const addData = (label) => {
 };
 
 const classify = () => {
-  if (knnClassifier.getNumLabels() > 0) {
+  if (
+    knnClassifier.getNumLabels() > 0 &&
+    knnClassifier.getCountByLabel()["A"] > 0 &&
+    knnClassifier.getCountByLabel()["B"] > 0
+  ) {
     const poseArray = poses[0].pose.keypoints.map((p) => [
       p.score,
       p.position.x,
       p.position.y,
     ]);
     knnClassifier.classify(poseArray, gotResults);
+  } else {
+    console.warn("Please provide samples for both classes before classifying.");
   }
 };
 
@@ -84,8 +72,28 @@ const createButtons = () => {
   document
     .getElementById("resetB")
     .addEventListener("click", () => clearLabel("B"));
-  document.getElementById("buttonPredict").addEventListener("click", classify);
+  document.getElementById("buttonPredict").addEventListener("click", () => {
+    if (
+      knnClassifier.getCountByLabel()["A"] &&
+      knnClassifier.getCountByLabel()["B"]
+    ) {
+      classify();
+    } else {
+      console.warn(
+        "Please add examples for both classes before starting prediction."
+      );
+    }
+  });
   document.getElementById("clearAll").addEventListener("click", clearAllLabels);
+  document
+    .getElementById("saveModel")
+    .addEventListener("click", () => knnClassifier.save());
+  document.getElementById("loadModel").addEventListener("click", () => {
+    knnClassifier.load("myKNN.json", () => {
+      console.log("Model loaded successfully");
+      updateCounts();
+    });
+  });
 };
 
 const gotResults = (error, result) => {
@@ -93,34 +101,22 @@ const gotResults = (error, result) => {
     console.error(error);
     return;
   }
-  const confidences = result.confidencesByLabel;
-  const currentPose = result.label;
-  const confidenceValue = confidences[currentPose] * 100;
 
-  if (currentPose === "B" && confidenceValue === 100) {
+  if (result.label === "B" && result.confidencesByLabel["B"] >= 0.95) {
     squatState = "squatting";
   }
 
   if (
-    currentPose === "A" &&
-    confidenceValue === 100 &&
-    squatState === "squatting"
+    result.label === "A" &&
+    squatState === "squatting" &&
+    result.confidencesByLabel["A"] >= 0.95
   ) {
     squatState = "standing";
     squatCount++;
     document.querySelector("#squatCounter").textContent = squatCount;
   }
 
-  document.querySelector("#result").textContent = result.label;
-  document.querySelector("#confidence").textContent = `${(
-    confidences[result.label] * 100
-  ).toFixed(2)}%`;
-  document.getElementById("confidenceA").textContent = `${(
-    confidences["A"] * 100
-  ).toFixed(2)}%`;
-  document.getElementById("confidenceB").textContent = `${(
-    confidences["B"] * 100
-  ).toFixed(2)}%`;
+  updateConfidenceDisplays(result);
   classify();
 };
 
@@ -143,25 +139,40 @@ const clearAllLabels = () => {
 const resultHandler = (results) => {
   if (!results.length) return;
   poses = results;
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.fillStyle = "red";
-  ctx.strokeStyle = "white";
-  ctx.lineWidth = 2;
-  const keypoints = results[0].pose.keypoints;
-
-  keypoints.forEach((keypoint) => {
-    if (keypointNames.includes(keypoint.part)) {
-      ctx.beginPath();
-      ctx.arc(keypoint.position.x, keypoint.position.y, 5, 0, 2 * Math.PI);
-      ctx.fill();
-      ctx.stroke();
-    }
-  });
+  drawKeypoints();
 };
 
 const modelReady = () => {
   console.log("PoseNet model loaded");
   poseNet.multiPose(video);
+};
+
+const drawKeypoints = () => {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = "red";
+  ctx.strokeStyle = "white";
+  ctx.lineWidth = 2;
+  const keypoints = poses[0].pose.keypoints;
+
+  keypoints.forEach((keypoint) => {
+    ctx.beginPath();
+    ctx.arc(keypoint.position.x, keypoint.position.y, 5, 0, 2 * Math.PI);
+    ctx.fill();
+    ctx.stroke();
+  });
+};
+
+const updateConfidenceDisplays = (result) => {
+  document.querySelector("#result").textContent = result.label;
+  document.querySelector("#confidence").textContent = `${(
+    result.confidencesByLabel[result.label] * 100
+  ).toFixed(2)}%`;
+  document.getElementById("confidenceA").textContent = `${(
+    result.confidencesByLabel["A"] * 100
+  ).toFixed(2)}%`;
+  document.getElementById("confidenceB").textContent = `${(
+    result.confidencesByLabel["B"] * 100
+  ).toFixed(2)}%`;
 };
 
 init();

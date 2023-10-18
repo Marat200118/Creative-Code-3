@@ -68,12 +68,12 @@ const createButtons = () => {
   document
     .getElementById("addClassB")
     .addEventListener("click", () => addData("B"));
-  document
-    .getElementById("resetA")
-    .addEventListener("click", () => clearLabel("A"));
-  document
-    .getElementById("resetB")
-    .addEventListener("click", () => clearLabel("B"));
+  // document
+  //   .getElementById("resetA")
+  //   .addEventListener("click", () => clearLabel("A"));
+  // document
+  //   .getElementById("resetB")
+  //   .addEventListener("click", () => clearLabel("B"));
   document.getElementById("buttonPredict").addEventListener("click", () => {
     if (
       knnClassifier.getCountByLabel()["A"] &&
@@ -94,6 +94,7 @@ const createButtons = () => {
     knnClassifier.load("myKNN.json", () => {
       console.log("Model loaded successfully");
       updateCounts();
+      classify();
     });
   });
 };

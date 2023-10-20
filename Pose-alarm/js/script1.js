@@ -4,21 +4,21 @@ let canvas;
 let ctx;
 let poseNet;
 let poses = [];
-let squatState = "standing";
+let squatState;
 let squatCount = 0;
-let jumpState = "onGround";
-let jumpCount = 0;
 let alarmTimeout;
 let countdownInterval;
-let requiredReps = 0;  // Add this
-let selectedExercise = ""; 
+let requiredReps = 0;
+let selectedExercise = "";
+let jumpState;
+let jumpCount = 0;
 
 const init = async () => {
   knnClassifier = ml5.KNNClassifier();
   video = document.querySelector("#video");
   canvas = document.querySelector("#canvas");
   ctx = canvas.getContext("2d");
-  
+
   const stream = await navigator.mediaDevices.getUserMedia({
     video: true,
     audio: false,
@@ -38,39 +38,82 @@ const init = async () => {
   updateCounts();
 };
 
-const createButtons = () => {
-  document.getElementById("addClassA").addEventListener("click", () => addData("squatting"));
-  document.getElementById("addClassB").addEventListener("click", () => addData("standing"));
-  document.getElementById("addClassC").addEventListener("click", () => addData("jumping"));
-  document.getElementById("addClassD").addEventListener("click", () => addData("onGround"));
-  document.getElementById("buttonPredict").addEventListener("click", classify);
-  document.getElementById("saveModel").addEventListener("click", () => knnClassifier.save());
-  document.getElementById("loadModel").addEventListener("click", loadModel);
-};
-
 const addData = (label) => {
-  const poseArray = poses[0].pose.keypoints.map((p) => [p.score, p.position.x, p.position.y]);
+  const poseArray = poses[0].pose.keypoints.map((p) => [
+    p.score,
+    p.position.x,
+    p.position.y,
+  ]);
   knnClassifier.addExample(poseArray, label);
   updateCounts();
 };
 
-const classify = () => {
-  const requiredLabels = ["squatting", "standing", "jumping", "onGround"];
-  const isReadyForClassification = requiredLabels.every((label) => knnClassifier.getCountByLabel()[label] > 0);
+// [ ... Rest of your existing code ... ]
 
-  if (isReadyForClassification) {
-    const poseArray = poses[0].pose.keypoints.map((p) => [p.score, p.position.x, p.position.y]);
+const classify = () => {
+  if (
+    knnClassifier.getNumLabels() > 0 &&
+    knnClassifier.getCountByLabel()["A"] > 0 &&
+    knnClassifier.getCountByLabel()["B"] > 0 &&
+    knnClassifier.getCountByLabel()["C"] > 0 &&
+    knnClassifier.getCountByLabel()["D"] > 0
+  ) {
+    const poseArray = poses[0].pose.keypoints.map((p) => [
+      p.score,
+      p.position.x,
+      p.position.y,
+    ]);
     knnClassifier.classify(poseArray, gotResults);
   } else {
     console.warn("Please provide samples for all classes before classifying.");
   }
 };
 
-const loadModel = () => {
-  knnClassifier.load("myKNN.json", () => {
-    console.log("Model loaded successfully");
-    updateCounts();
-    classify();
+
+const createButtons = () => {
+  document
+    .getElementById("addClassA")
+    .addEventListener("click", () => addData("A"));
+  document
+    .getElementById("addClassB")
+    .addEventListener("click", () => addData("B"));
+    document
+      .getElementById("addClassC")
+      .addEventListener("click", () => addData("C"));
+    document
+      .getElementById("addClassD")
+      .addEventListener("click", () => addData("D"));
+       document.getElementById("predictSquat").addEventListener("click", () => {
+         selectedExercise = "squat";
+         classify();
+       });
+       document.getElementById("predictJump").addEventListener("click", () => {
+         selectedExercise = "jump";
+         classify();
+       });
+  // document.getElementById("buttonPredict").addEventListener("click", () => {
+    // if (
+    //   knnClassifier.getCountByLabel()["A"] &&
+    //   knnClassifier.getCountByLabel()["B"]
+    // ) {
+    //   classify();
+    // } else {
+    //   console.warn(
+    //     "Please add examples for both classes before starting prediction."
+    //   );
+    // }
+  // });
+  // document.getElementById("clearAll").addEventListener("click", clearAllLabels);
+  document
+    .getElementById("saveModel")
+    .addEventListener("click", () => knnClassifier.save());
+  document.getElementById("loadModel").addEventListener("click", () => {
+    let modelName = selectedExercise === "squat" ? "myKNN.json" : "jumps.json";
+    knnClassifier.load(modelName, () => {
+      console.log("Model loaded successfully");
+      updateCounts();
+      classify();
+    });
   });
 };
 
@@ -79,81 +122,207 @@ const gotResults = (error, result) => {
     console.error(error);
     return;
   }
-  classifySquats(result);
-  classifyJumps(result);
+
+  if (selectedExercise === "squat") {
+    if (
+      result.label === "B" &&
+      (squatState === "standing" || squatState === undefined) &&
+      result.confidencesByLabel["B"] >= 0.95
+    ) {
+      squatState = "squatting";
+    } else if (
+      result.label === "A" &&
+      squatState === "squatting" &&
+      result.confidencesByLabel["A"] >= 0.95
+    ) {
+      squatState = "standing";
+      squatCount++;
+      document.querySelector("#squatCounter").textContent = squatCount;
+    } else if (
+      squatState === undefined &&
+      result.confidencesByLabel["A"] >= 0.95
+    ) {
+      squatState = "standing"; // Default starting state if classifier is confident the user is standing
+    } else if (
+      squatState === undefined &&
+      result.confidencesByLabel["B"] >= 0.95
+    ) {
+      squatState = "squatting"; // Default starting state if classifier is confident the user is squatting
+    }
+  } else if (selectedExercise === "jump") {
+    if (
+      result.label === "C" &&
+      (jumpState === "onGround" || jumpState === undefined) &&
+      result.confidencesByLabel["C"] >= 0.95
+    ) {
+      jumpState = "jumping";
+    } else if (
+      result.label === "D" &&
+      jumpState === "jumping" &&
+      result.confidencesByLabel["D"] >= 0.95
+    ) {
+      jumpState = "onGround";
+      jumpCount++;
+      document.querySelector("#jumpCounter").textContent = jumpCount;
+    } else if (
+      jumpState === undefined &&
+      result.confidencesByLabel["D"] >= 0.95
+    ) {
+      jumpState = "onGround";
+    } else if (
+      jumpState === undefined &&
+      result.confidencesByLabel["C"] >= 0.95
+    ) {
+      jumpState = "jumping";
+    }
+  }
+
+  checkExerciseCompletion();
   updateConfidenceDisplays(result);
   classify();
 };
 
-const classifySquats = (result) => {
-  if (result.label === "squatting" && result.confidencesByLabel["squatting"] >= 0.95) {
-    squatState = "squatting";
-  }
-  if (result.label === "standing" && squatState === "squatting" && result.confidencesByLabel["standing"] >= 0.95) {
-    squatState = "standing";
-    squatCount++;
-    document.querySelector("#squatCounter").textContent = squatCount;
-  }
+const updateCounts = () => {
+  const counts = knnClassifier.getCountByLabel();
+  document.getElementById("exampleA").textContent = counts["A"] || 0;
+  document.getElementById("exampleB").textContent = counts["B"] || 0;
+  document.getElementById("exampleC").textContent = counts["C"] || 0;
+  document.getElementById("exampleD").textContent = counts["D"] || 0;
 };
 
-const classifyJumps = (result) => {
-  if (result.label === "jumping" && result.confidencesByLabel["jumping"] >= 0.95) {
-    jumpState = "jumping";
-  }
-  if (result.label === "onGround" && jumpState === "jumping" && result.confidencesByLabel["onGround"] >= 0.95) {
-    jumpState = "onGround";
-    jumpCount++;
-    document.querySelector("#jumpCounter").textContent = jumpCount;
-  }
-};
+// [ ... Rest of your existing code ... ]
 
-const modelReady = () => {
-  console.log("PoseNet model is ready!");
+const clearAllLabels = () => {
+  knnClassifier.clearAllLabels();
+  updateCounts();
 };
 
 const resultHandler = (results) => {
-  poses = results; // Store the latest poses
-  drawPoses(); // Optional: Draw the poses onto the canvas
+  if (!results.length) return;
+  poses = results;
+  drawKeypoints();
 };
 
-const drawPoses = () => {
-  if (video.playing && poses.length > 0) {
-    ctx.drawImage(video, 0, 0, video.width, video.height);
-    let pose = poses[0].pose;
-    for (let i = 0; i < pose.keypoints.length; i++) {
-      let x = pose.keypoints[i].position.x;
-      let y = pose.keypoints[i].position.y;
-      ctx.beginPath();
-      ctx.arc(x, y, 5, 0, 2 * Math.PI);
-      ctx.fillStyle = "red";
-      ctx.fill();
-    }
+const modelReady = () => {
+  console.log("PoseNet model loaded");
+  poseNet.multiPose(video);
+};
+
+const drawKeypoints = () => {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = "red";
+  ctx.strokeStyle = "white";
+  ctx.lineWidth = 2;
+  const keypoints = poses[0].pose.keypoints;
+
+  keypoints.forEach((keypoint) => {
+    ctx.beginPath();
+    ctx.arc(keypoint.position.x, keypoint.position.y, 5, 0, 2 * Math.PI);
+    ctx.fill();
+    ctx.stroke();
+  });
+};
+
+const checkExerciseCompletion = () => {
+  if (selectedExercise === "squat" && squatCount >= requiredReps) {
+    document.getElementById("alarmSound").pause();
+    document.getElementById("alarmSound").currentTime = 0; // reset the sound time
+    requiredReps = 0;
+    squatCount = 0;
+    document.querySelector("#squatCounter").textContent = 0;
+  }
+  if (selectedExercise === "jump" && jumpCount >= requiredReps) {
+    document.getElementById("alarmSound").pause();
+    document.getElementById("alarmSound").currentTime = 0;
+    requiredReps = 0;
+    jumpCount = 0;
+    document.querySelector("#jumpCounter").textContent = 0;
   }
 };
 
-const updateCounts = () => {
-  const counts = knnClassifier.getCountByLabel();
-  // Assuming you have display elements for each class count
-  document.querySelector("#squattingCount").textContent =
-    counts["squatting"] || 0;
-  document.querySelector("#standingCount").textContent =
-    counts["standing"] || 0;
-  document.querySelector("#jumpingCount").textContent = counts["jumping"] || 0;
-  document.querySelector("#onGroundCount").textContent =
-    counts["onGround"] || 0;
-};
-
 const updateConfidenceDisplays = (result) => {
-  // Assuming you have display elements for each class confidence
-  document.querySelector("#confidenceSquatting").textContent =
-    (result.confidencesByLabel["squatting"] * 100).toFixed(2) + "%";
-  document.querySelector("#confidenceStanding").textContent =
-    (result.confidencesByLabel["standing"] * 100).toFixed(2) + "%";
-  document.querySelector("#confidenceJumping").textContent =
-    (result.confidencesByLabel["jumping"] * 100).toFixed(2) + "%";
-  document.querySelector("#confidenceOnGround").textContent =
-    (result.confidencesByLabel["onGround"] * 100).toFixed(2) + "%";
+  document.querySelector("#result").textContent = result.label;
+  document.querySelector("#confidence").textContent = `${(
+    result.confidencesByLabel[result.label] * 100
+  ).toFixed(2)}%`;
+  document.getElementById("confidenceA").textContent = `${(
+    result.confidencesByLabel["A"] * 100
+  ).toFixed(2)}%`;
+  document.getElementById("confidenceB").textContent = `${(
+    result.confidencesByLabel["B"] * 100
+  ).toFixed(2)}%`;
+  document.getElementById("confidenceC").textContent = `${(
+    result.confidencesByLabel["C"] * 100
+  ).toFixed(2)}%`;
+  document.getElementById("confidenceD").textContent = `${(
+    result.confidencesByLabel["D"] * 100
+  ).toFixed(2)}%`;
 };
 
-// Finally, call the init function to start everything:
 init();
+
+const setAlarm = () => {
+  const alarmInput = document.getElementById("alarmTime");
+  const alarmTime = new Date();
+  const [hour, minute] = alarmInput.value.split(":").map(Number);
+  const exerciseChoice = document.getElementById("exerciseChoice").value;
+  const repetitionCount = document.getElementById("repetitionCount").value;
+
+  selectedExercise = exerciseChoice;
+  requiredReps = parseInt(repetitionCount);
+  alarmTime.setHours(hour);
+  alarmTime.setMinutes(minute);
+  alarmTime.setSeconds(0);
+  alarmTime.setMilliseconds(0);
+
+  const currentTime = new Date();
+  if (alarmTime <= currentTime) {
+    alarmTime.setDate(alarmTime.getDate() + 1); // set for next day if time already passed
+  }
+
+  const displayTimeUntilAlarm = () => {
+    const currentTime = new Date();
+    const difference = alarmTime - currentTime;
+    if (difference <= 0) {
+      document.querySelector(".current-time h2").innerText = "ALARM!";
+      clearInterval(countdownInterval);
+      return;
+    }
+    const hours = Math.floor(difference / 1000 / 60 / 60);
+    const minutes = Math.floor((difference / 1000 / 60) % 60);
+    const seconds = Math.floor((difference / 1000) % 60);
+
+    const timeString = `${String(hours).padStart(2, "0")}:${String(
+      minutes
+    ).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+
+    document.querySelector(".current-time h2").innerText = timeString;
+  };
+
+  if (countdownInterval) {
+    clearInterval(countdownInterval);
+  }
+
+  countdownInterval = setInterval(displayTimeUntilAlarm, 1000);
+
+  const feedback = document.getElementById("feedback");
+  feedback.style.display = "block";
+  setTimeout(() => {
+    feedback.style.display = "none";
+  }, 3000);
+
+  const durationUntilAlarm = alarmTime - currentTime;
+  console.log(durationUntilAlarm);
+
+  if (alarmTimeout) {
+    clearTimeout(alarmTimeout);
+  }
+
+  alarmTimeout = setTimeout(() => {
+    const alarmSound = document.getElementById("alarmSound");
+    alarmSound.play();
+  }, durationUntilAlarm);
+};
+
+document.getElementById("alarmTime").addEventListener("change", setAlarm);
+

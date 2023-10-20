@@ -70,12 +70,6 @@ const createButtons = () => {
   document
     .getElementById("addClassB")
     .addEventListener("click", () => addData("B"));
-  // document
-  //   .getElementById("resetA")
-  //   .addEventListener("click", () => clearLabel("A"));
-  // document
-  //   .getElementById("resetB")
-  //   .addEventListener("click", () => clearLabel("B"));
   document.getElementById("buttonPredict").addEventListener("click", () => {
     if (
       knnClassifier.getCountByLabel()["A"] &&
@@ -99,15 +93,6 @@ const createButtons = () => {
       classify();
     });
   });
-
-  // document.getElementById("loadJumpModel").addEventListener("click", () => {
-  //   knnClassifier.load("jumps.json", () => {
-  //     console.log("Jump Model loaded successfully");
-  //     updateCounts();
-  //     classify();
-  //   });
-  // });
-
 };
 
 const gotResults = (error, result) => {
@@ -116,7 +101,6 @@ const gotResults = (error, result) => {
     return;
   }
 
-  // Check for squat down motion
   if (
     result.label === "B" &&
     (squatState === "standing" || squatState === undefined) &&
@@ -125,7 +109,6 @@ const gotResults = (error, result) => {
     squatState = "squatting";
   }
 
-  // Check for squat up motion
   else if (
     result.label === "A" &&
     squatState === "squatting" &&
@@ -136,7 +119,6 @@ const gotResults = (error, result) => {
     document.querySelector("#squatCounter").textContent = squatCount;
   }
 
-  // Initialize squatState if it's undefined and classifier is confident
   else if (squatState === undefined && result.confidencesByLabel["A"] >= 0.95) {
     squatState = "standing"; // Default starting state if classifier is confident the user is standing
   } else if (
@@ -147,15 +129,8 @@ const gotResults = (error, result) => {
   }
 
   checkExerciseCompletion();
-  // console.log("Label:", result.label);
-  // console.log("Confidence A:", result.confidencesByLabel["A"]);
-  // console.log("Confidence B:", result.confidencesByLabel["B"]);
-  // console.log("Current Squat State:", squatState);
-
   updateConfidenceDisplays(result);
   classify();
-
-  
 };
 
 const updateCounts = () => {
@@ -165,11 +140,6 @@ const updateCounts = () => {
   // document.getElementById("exampleC").textContent = counts["C"] || 0;
   // document.getElementById("exampleD").textContent = counts["D"] || 0;
 };
-
-// const clearLabel = (classLabel) => {
-//   knnClassifier.clearLabel(classLabel);
-//   updateCounts();
-// };
 
 const clearAllLabels = () => {
   knnClassifier.clearAllLabels();
@@ -287,8 +257,6 @@ const setAlarm = () => {
   alarmTimeout = setTimeout(() => {
     const alarmSound = document.getElementById("alarmSound");
     alarmSound.play();
-    // selectedExercise = "squat"; // you'd adjust this based on user input
-    // requiredReps = 5;
   }, durationUntilAlarm);
 };
 

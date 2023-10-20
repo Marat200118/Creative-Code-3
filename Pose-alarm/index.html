@@ -35,7 +35,7 @@
       <button onclick="setAlarm()">Set Alarm</button>
       <select id="exerciseChoice">
         <option value="squat">Squat</option>
-        <!-- <option value="jump">Jump</option> -->
+        <option value="jump">Jump</option>
       </select>
       <input type="number" id="repetitionCount" min="1" placeholder="Number of reps">
     </div>
@@ -69,6 +69,7 @@
               <p><span id="exampleB">0</span> "Standing" examples</p>
               <p>| Confidence in "Standing" is: <span id="confidenceB">0</span></p>
             </div>
+            <button id="predictSquat">Predict Squat</button>
           </div>
         </div>
         <div class="activity-item">
@@ -88,8 +89,9 @@
             <div class="activity-button-set">
               <button id="addClassD">Add to Class "On Ground"</button>
               <p><span id="exampleD">0</span> "On Ground" examples</p>
-              <p>| Confidence in "On Ground" is: <span id="confidenceD">0</span></p>
+              <p>| Confidence in "On Ground" is: <span id="confidenceD"></span>
             </div>
+            <button id="predictJump">Predict Jump</button>
           </div>
         </div>
 

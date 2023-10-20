@@ -4,10 +4,12 @@ let canvas;
 let ctx;
 let poseNet;
 let poses = [];
-let squatState = "standing";
+let squatState;
 let squatCount = 0;
 let alarmTimeout;
 let countdownInterval;
+let requiredReps = 0;
+let selectedExercise = "";
 
 const init = async () => {
   knnClassifier = ml5.KNNClassifier();
@@ -86,7 +88,7 @@ const createButtons = () => {
       );
     }
   });
-  document.getElementById("clearAll").addEventListener("click", clearAllLabels);
+  // document.getElementById("clearAll").addEventListener("click", clearAllLabels);
   document
     .getElementById("saveModel")
     .addEventListener("click", () => knnClassifier.save());
@@ -97,6 +99,15 @@ const createButtons = () => {
       classify();
     });
   });
+
+  // document.getElementById("loadJumpModel").addEventListener("click", () => {
+  //   knnClassifier.load("jumps.json", () => {
+  //     console.log("Jump Model loaded successfully");
+  //     updateCounts();
+  //     classify();
+  //   });
+  // });
+
 };
 
 const gotResults = (error, result) => {
@@ -105,11 +116,17 @@ const gotResults = (error, result) => {
     return;
   }
 
-  if (result.label === "B" && result.confidencesByLabel["B"] >= 0.95) {
+  // Check for squat down motion
+  if (
+    result.label === "B" &&
+    (squatState === "standing" || squatState === undefined) &&
+    result.confidencesByLabel["B"] >= 0.95
+  ) {
     squatState = "squatting";
   }
 
-  if (
+  // Check for squat up motion
+  else if (
     result.label === "A" &&
     squatState === "squatting" &&
     result.confidencesByLabel["A"] >= 0.95
@@ -119,20 +136,40 @@ const gotResults = (error, result) => {
     document.querySelector("#squatCounter").textContent = squatCount;
   }
 
+  // Initialize squatState if it's undefined and classifier is confident
+  else if (squatState === undefined && result.confidencesByLabel["A"] >= 0.95) {
+    squatState = "standing"; // Default starting state if classifier is confident the user is standing
+  } else if (
+    squatState === undefined &&
+    result.confidencesByLabel["B"] >= 0.95
+  ) {
+    squatState = "squatting"; // Default starting state if classifier is confident the user is squatting
+  }
+
+  checkExerciseCompletion();
+  // console.log("Label:", result.label);
+  // console.log("Confidence A:", result.confidencesByLabel["A"]);
+  // console.log("Confidence B:", result.confidencesByLabel["B"]);
+  // console.log("Current Squat State:", squatState);
+
   updateConfidenceDisplays(result);
   classify();
+
+  
 };
 
 const updateCounts = () => {
   const counts = knnClassifier.getCountByLabel();
   document.getElementById("exampleA").textContent = counts["A"] || 0;
   document.getElementById("exampleB").textContent = counts["B"] || 0;
+  // document.getElementById("exampleC").textContent = counts["C"] || 0;
+  // document.getElementById("exampleD").textContent = counts["D"] || 0;
 };
 
-const clearLabel = (classLabel) => {
-  knnClassifier.clearLabel(classLabel);
-  updateCounts();
-};
+// const clearLabel = (classLabel) => {
+//   knnClassifier.clearLabel(classLabel);
+//   updateCounts();
+// };
 
 const clearAllLabels = () => {
   knnClassifier.clearAllLabels();
@@ -165,6 +202,16 @@ const drawKeypoints = () => {
   });
 };
 
+const checkExerciseCompletion = () => {
+  if (selectedExercise === "squat" && squatCount >= requiredReps) {
+    document.getElementById("alarmSound").pause();
+    document.getElementById("alarmSound").currentTime = 0; // reset the sound time
+    requiredReps = 0;
+    squatCount = 0;
+    document.querySelector("#squatCounter").textContent = 0;
+  } // Similarly, add logic for jumps when you handle that
+};
+
 const updateConfidenceDisplays = (result) => {
   document.querySelector("#result").textContent = result.label;
   document.querySelector("#confidence").textContent = `${(
@@ -184,6 +231,11 @@ const setAlarm = () => {
   const alarmInput = document.getElementById("alarmTime");
   const alarmTime = new Date();
   const [hour, minute] = alarmInput.value.split(":").map(Number);
+  const exerciseChoice = document.getElementById("exerciseChoice").value;
+  const repetitionCount = document.getElementById("repetitionCount").value;
+
+  selectedExercise = exerciseChoice;
+  requiredReps = parseInt(repetitionCount);
   alarmTime.setHours(hour);
   alarmTime.setMinutes(minute);
   alarmTime.setSeconds(0);
@@ -235,7 +287,8 @@ const setAlarm = () => {
   alarmTimeout = setTimeout(() => {
     const alarmSound = document.getElementById("alarmSound");
     alarmSound.play();
-    // Here you can start the video or any other functionality you want to trigger with the alarm.
+    // selectedExercise = "squat"; // you'd adjust this based on user input
+    // requiredReps = 5;
   }, durationUntilAlarm);
 };
 

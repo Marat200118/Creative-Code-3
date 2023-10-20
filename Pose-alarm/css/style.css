@@ -87,7 +87,7 @@ label {
   transition: all 0.3s ease-in-out;
 }
 
-.activity-item:hover {
+.activity-item:hover, .activity-item:active {
   cursor: pointer;
   background-color: lightgreen;
   transform: scale(1.05);

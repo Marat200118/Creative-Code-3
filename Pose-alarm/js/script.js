@@ -107,9 +107,7 @@ const gotResults = (error, result) => {
     result.confidencesByLabel["B"] >= 0.95
   ) {
     squatState = "squatting";
-  }
-
-  else if (
+  } else if (
     result.label === "A" &&
     squatState === "squatting" &&
     result.confidencesByLabel["A"] >= 0.95
@@ -117,15 +115,16 @@ const gotResults = (error, result) => {
     squatState = "standing";
     squatCount++;
     document.querySelector("#squatCounter").textContent = squatCount;
-  }
-
-  else if (squatState === undefined && result.confidencesByLabel["A"] >= 0.95) {
-    squatState = "standing"; // Default starting state if classifier is confident the user is standing
+  } else if (
+    squatState === undefined &&
+    result.confidencesByLabel["A"] >= 0.95
+  ) {
+    squatState = "standing";
   } else if (
     squatState === undefined &&
     result.confidencesByLabel["B"] >= 0.95
   ) {
-    squatState = "squatting"; // Default starting state if classifier is confident the user is squatting
+    squatState = "squatting";
   }
 
   checkExerciseCompletion();
@@ -175,11 +174,11 @@ const drawKeypoints = () => {
 const checkExerciseCompletion = () => {
   if (selectedExercise === "squat" && squatCount >= requiredReps) {
     document.getElementById("alarmSound").pause();
-    document.getElementById("alarmSound").currentTime = 0; // reset the sound time
+    document.getElementById("alarmSound").currentTime = 0;
     requiredReps = 0;
     squatCount = 0;
     document.querySelector("#squatCounter").textContent = 0;
-  } // Similarly, add logic for jumps when you handle that
+  }
 };
 
 const updateConfidenceDisplays = (result) => {
@@ -213,7 +212,7 @@ const setAlarm = () => {
 
   const currentTime = new Date();
   if (alarmTime <= currentTime) {
-    alarmTime.setDate(alarmTime.getDate() + 1); // set for next day if time already passed
+    alarmTime.setDate(alarmTime.getDate() + 1);
   }
 
   const displayTimeUntilAlarm = () => {

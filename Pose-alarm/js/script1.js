@@ -12,6 +12,50 @@ let requiredReps = 0;
 let selectedExercise = "";
 let jumpState;
 let jumpCount = 0;
+const URL = "./my-pose-model/";
+let tmModel, tmWebcam, tmMaxPredictions;
+
+const initTmModel = async () => {
+  const modelURL = URL + "model.json";
+  const metadataURL = URL + "metadata.json";
+  tmModel = await tmPose.load(modelURL, metadataURL);
+  tmMaxPredictions = tmModel.getTotalClasses();
+  video = document.getElementById("video");
+  video.play();
+  tmWebcam = new tmPose.Webcam(200, 200, true);
+  await tmWebcam.setup();
+
+  classifyPose();
+};
+
+const classifyPose = async () => {
+  const { pose } = await tmModel.estimatePose(video);
+  const prediction = await tmModel.predict(pose);
+
+  for (let i = 0; i < prediction.length; i++) {
+    const classPrediction =
+      prediction[i].className + ": " + prediction[i].probability.toFixed(2);
+
+    if (
+      prediction[i].className == "Jump" &&
+      prediction[i].probability > 0.9 &&
+      jumpState !== "Jump"
+    ) {
+      jumpState = "Jump";
+    } else if (
+      prediction[i].className == "On Ground" &&
+      prediction[i].probability > 0.9 &&
+      jumpState === "Jump"
+    ) {
+      jumpState = "On Ground";
+      jumpCount++;
+      document.getElementById("jumpCounter").innerText = jumpCount;
+    }
+  }
+
+  // Recursively call classifyPose
+  classifyPose();
+};
 
 const init = async () => {
   knnClassifier = ml5.KNNClassifier();
@@ -36,7 +80,9 @@ const init = async () => {
   poseNet.on("pose", resultHandler);
   createButtons();
   updateCounts();
+  await initTmModel();
 };
+initTmModel();
 
 const addData = (label) => {
   const poseArray = poses[0].pose.keypoints.map((p) => [
@@ -48,15 +94,11 @@ const addData = (label) => {
   updateCounts();
 };
 
-// [ ... Rest of your existing code ... ]
-
 const classify = () => {
   if (
     knnClassifier.getNumLabels() > 0 &&
     knnClassifier.getCountByLabel()["A"] > 0 &&
-    knnClassifier.getCountByLabel()["B"] > 0 &&
-    knnClassifier.getCountByLabel()["C"] > 0 &&
-    knnClassifier.getCountByLabel()["D"] > 0
+    knnClassifier.getCountByLabel()["B"] > 0
   ) {
     const poseArray = poses[0].pose.keypoints.map((p) => [
       p.score,
@@ -65,10 +107,9 @@ const classify = () => {
     ]);
     knnClassifier.classify(poseArray, gotResults);
   } else {
-    console.warn("Please provide samples for all classes before classifying.");
+    console.warn("Please provide samples for both classes before classifying.");
   }
 };
-
 
 const createButtons = () => {
   document
@@ -77,39 +118,24 @@ const createButtons = () => {
   document
     .getElementById("addClassB")
     .addEventListener("click", () => addData("B"));
-    document
-      .getElementById("addClassC")
-      .addEventListener("click", () => addData("C"));
-    document
-      .getElementById("addClassD")
-      .addEventListener("click", () => addData("D"));
-       document.getElementById("predictSquat").addEventListener("click", () => {
-         selectedExercise = "squat";
-         classify();
-       });
-       document.getElementById("predictJump").addEventListener("click", () => {
-         selectedExercise = "jump";
-         classify();
-       });
-  // document.getElementById("buttonPredict").addEventListener("click", () => {
-    // if (
-    //   knnClassifier.getCountByLabel()["A"] &&
-    //   knnClassifier.getCountByLabel()["B"]
-    // ) {
-    //   classify();
-    // } else {
-    //   console.warn(
-    //     "Please add examples for both classes before starting prediction."
-    //   );
-    // }
-  // });
+  document.getElementById("buttonPredict").addEventListener("click", () => {
+    if (
+      knnClassifier.getCountByLabel()["A"] &&
+      knnClassifier.getCountByLabel()["B"]
+    ) {
+      classify();
+    } else {
+      console.warn(
+        "Please add examples for both classes before starting prediction."
+      );
+    }
+  });
   // document.getElementById("clearAll").addEventListener("click", clearAllLabels);
   document
     .getElementById("saveModel")
     .addEventListener("click", () => knnClassifier.save());
   document.getElementById("loadModel").addEventListener("click", () => {
-    let modelName = selectedExercise === "squat" ? "myKNN.json" : "jumps.json";
-    knnClassifier.load(modelName, () => {
+    knnClassifier.load("myKNN.json", () => {
       console.log("Model loaded successfully");
       updateCounts();
       classify();
@@ -117,65 +143,59 @@ const createButtons = () => {
   });
 };
 
-const gotResults = (error, result) => {
+const gotResults = async (error, result) => {
   if (error) {
     console.error(error);
     return;
   }
 
-  if (selectedExercise === "squat") {
-    if (
-      result.label === "B" &&
-      (squatState === "standing" || squatState === undefined) &&
-      result.confidencesByLabel["B"] >= 0.95
-    ) {
-      squatState = "squatting";
-    } else if (
-      result.label === "A" &&
-      squatState === "squatting" &&
-      result.confidencesByLabel["A"] >= 0.95
-    ) {
-      squatState = "standing";
-      squatCount++;
-      document.querySelector("#squatCounter").textContent = squatCount;
-    } else if (
-      squatState === undefined &&
-      result.confidencesByLabel["A"] >= 0.95
-    ) {
-      squatState = "standing"; // Default starting state if classifier is confident the user is standing
-    } else if (
-      squatState === undefined &&
-      result.confidencesByLabel["B"] >= 0.95
-    ) {
-      squatState = "squatting"; // Default starting state if classifier is confident the user is squatting
-    }
-  } else if (selectedExercise === "jump") {
-    if (
-      result.label === "C" &&
-      (jumpState === "onGround" || jumpState === undefined) &&
-      result.confidencesByLabel["C"] >= 0.95
-    ) {
-      jumpState = "jumping";
-    } else if (
-      result.label === "D" &&
-      jumpState === "jumping" &&
-      result.confidencesByLabel["D"] >= 0.95
-    ) {
-      jumpState = "onGround";
-      jumpCount++;
-      document.querySelector("#jumpCounter").textContent = jumpCount;
-    } else if (
-      jumpState === undefined &&
-      result.confidencesByLabel["D"] >= 0.95
-    ) {
-      jumpState = "onGround";
-    } else if (
-      jumpState === undefined &&
-      result.confidencesByLabel["C"] >= 0.95
-    ) {
-      jumpState = "jumping";
-    }
+  if (
+    result.label === "B" &&
+    (squatState === "standing" || squatState === undefined) &&
+    result.confidencesByLabel["B"] >= 0.95
+  ) {
+    squatState = "squatting";
+  } else if (
+    result.label === "A" &&
+    squatState === "squatting" &&
+    result.confidencesByLabel["A"] >= 0.95
+  ) {
+    squatState = "standing";
+    squatCount++;
+    document.querySelector("#squatCounter").textContent = squatCount;
+  } else if (
+    squatState === undefined &&
+    result.confidencesByLabel["A"] >= 0.95
+  ) {
+    squatState = "standing";
+  } else if (
+    squatState === undefined &&
+    result.confidencesByLabel["B"] >= 0.95
+  ) {
+    squatState = "squatting";
   }
+
+  const { pose, posenetOutput } = await tmModel.estimatePose(video);
+  const tmPrediction = await tmModel.predict(posenetOutput);
+
+  tmPrediction.forEach((prediction) => {
+    if (
+      prediction.className === "jump" &&
+      prediction.probability > 0.95 &&
+      (jumpState === "standing" || jumpState === undefined)
+    ) {
+      jumpState = "jumping";
+    } else if (
+      jumpState === "jumping" &&
+      prediction.className === "stand" &&
+      prediction.probability > 0.95
+    ) {
+      jumpState = "standing";
+      jumpCount++;
+      document.querySelector("#jumpCounter").textContent = jumpCount; // Assuming you have a counter for jumps
+    }
+    console.log(prediction.className, prediction.probability);
+  });
 
   checkExerciseCompletion();
   updateConfidenceDisplays(result);
@@ -186,11 +206,9 @@ const updateCounts = () => {
   const counts = knnClassifier.getCountByLabel();
   document.getElementById("exampleA").textContent = counts["A"] || 0;
   document.getElementById("exampleB").textContent = counts["B"] || 0;
-  document.getElementById("exampleC").textContent = counts["C"] || 0;
-  document.getElementById("exampleD").textContent = counts["D"] || 0;
+  // document.getElementById("exampleC").textContent = counts["C"] || 0;
+  // document.getElementById("exampleD").textContent = counts["D"] || 0;
 };
-
-// [ ... Rest of your existing code ... ]
 
 const clearAllLabels = () => {
   knnClassifier.clearAllLabels();
@@ -226,17 +244,10 @@ const drawKeypoints = () => {
 const checkExerciseCompletion = () => {
   if (selectedExercise === "squat" && squatCount >= requiredReps) {
     document.getElementById("alarmSound").pause();
-    document.getElementById("alarmSound").currentTime = 0; // reset the sound time
+    document.getElementById("alarmSound").currentTime = 0;
     requiredReps = 0;
     squatCount = 0;
     document.querySelector("#squatCounter").textContent = 0;
-  }
-  if (selectedExercise === "jump" && jumpCount >= requiredReps) {
-    document.getElementById("alarmSound").pause();
-    document.getElementById("alarmSound").currentTime = 0;
-    requiredReps = 0;
-    jumpCount = 0;
-    document.querySelector("#jumpCounter").textContent = 0;
   }
 };
 
@@ -250,12 +261,6 @@ const updateConfidenceDisplays = (result) => {
   ).toFixed(2)}%`;
   document.getElementById("confidenceB").textContent = `${(
     result.confidencesByLabel["B"] * 100
-  ).toFixed(2)}%`;
-  document.getElementById("confidenceC").textContent = `${(
-    result.confidencesByLabel["C"] * 100
-  ).toFixed(2)}%`;
-  document.getElementById("confidenceD").textContent = `${(
-    result.confidencesByLabel["D"] * 100
   ).toFixed(2)}%`;
 };
 
@@ -277,7 +282,7 @@ const setAlarm = () => {
 
   const currentTime = new Date();
   if (alarmTime <= currentTime) {
-    alarmTime.setDate(alarmTime.getDate() + 1); // set for next day if time already passed
+    alarmTime.setDate(alarmTime.getDate() + 1);
   }
 
   const displayTimeUntilAlarm = () => {
@@ -325,4 +330,3 @@ const setAlarm = () => {
 };
 
 document.getElementById("alarmTime").addEventListener("change", setAlarm);
-

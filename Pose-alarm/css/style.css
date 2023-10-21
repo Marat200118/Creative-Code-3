@@ -140,3 +140,27 @@ label {
     border-radius: 4px;
     margin-right: 10px;
 }
+
+.instructions-container {
+    background-color: #e8e8e8;
+    padding: 20px;
+    margin-top: 30px;
+    border-radius: 8px;
+    box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.1);
+}
+
+.instruction-list {
+    font-family: var(--montserrat);
+    padding-left: 20px;
+    margin-top: 15px;
+}
+
+.instruction-list li {
+    margin-bottom: 10px;
+}
+
+#squatCounter {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: red;
+}

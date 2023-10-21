@@ -24,7 +24,7 @@
     </div>
 
     <div class="current-time">
-      <h2>15:45</h2>
+      <h2></h2>
     </div>
 
     <div class="alarm">
@@ -32,12 +32,12 @@
       <label for="alarmTime">Alarm Time (24-hour format):</label>
       <input type="time" id="alarmTime">
       <audio id="alarmSound" src="./assets/alarm-long.wav" preload="auto"></audio>
-      <button onclick="setAlarm()">Set Alarm</button>
       <select id="exerciseChoice">
         <option value="squat">Squat</option>
-        <option value="jump">Jump</option>
+        <!-- <option value="jump">Jump</option> -->
       </select>
       <input type="number" id="repetitionCount" min="1" placeholder="Number of reps">
+      <button onclick="setAlarm()">Set Alarm</button>
     </div>
   </div>
 
@@ -59,17 +59,14 @@
           <div class="activity-buttons">
             <div class="activity-button-set">
               <button id="addClassA">Add to Class "Squat"</button>
-              <!-- <button id="resetA">Reset Class "Squat"</button> -->
               <p><span id="exampleA">0</span> "Squat" examples</p>
               <p>| Confidence in "Squat" is: <span id="confidenceA">0</span></p>
             </div>
             <div class="activity-button-set">
               <button id="addClassB">Add to Class "Standing"</button>
-              <!-- <button id="resetB">Reset Class "Standing"</button> -->
               <p><span id="exampleB">0</span> "Standing" examples</p>
               <p>| Confidence in "Standing" is: <span id="confidenceB">0</span></p>
             </div>
-            <button id="predictSquat">Predict Squat</button>
           </div>
         </div>
         <div class="activity-item">
@@ -80,7 +77,7 @@
             <h3>Jumps</h3>
             <p>Jumps with hands and legs to the sides, after that, returning to the standing position.</p>
           </div>
-          <div class="activity-buttons">
+          <!-- <div class="activity-buttons">
             <div class="activity-button-set">
               <button id="addClassC">Add to Class "Jump"</button>
               <p><span id="exampleC">0</span> "Jump" examples</p>
@@ -92,7 +89,7 @@
               <p>| Confidence in "On Ground" is: <span id="confidenceD"></span>
             </div>
             <button id="predictJump">Predict Jump</button>
-          </div>
+          </div> -->
         </div>
 
       </div>
@@ -105,8 +102,7 @@
       <div>
         Squat Count: <span id="squatCounter">0</span>
       </div>
-      <button id="buttonPredict">Start predicting!</button>
-      <!-- <button id="clearAll">Clear all classes</button> -->
+      <!-- <button id="buttonPredict">Start predicting!</button> -->
       <button id="saveModel">Save Model</button>
       <button id="loadModel">Load Model</button>
 
@@ -116,11 +112,24 @@
       </p>
     </div>
   </div>
-
+  <div class="instructions-container">
+    <h2>How to Use:</h2>
+    <ol class="instruction-list">
+      <li>Load the Model by clicking on the "Load Model" button.</li>
+      <li>Add a sample for the squat <strong>first</strong>, then for the standing. Use the "Add to Class" buttons.</li>
+      <li>Set your desired alarm time using the provided input.</li>
+      <li>Choose your exercise and number of repetitions.</li>
+      <li>Click on "Set Alarm" to activate your exercise alarm.</li>
+    </ol>
+  </div>
   <script src="js/script.js"></script>
 </body>
 
 </html>
 
-<!-- <script src="https://unpkg.com/@tensorflow/tfjs"></script>
-    <script src="https://unpkg.com/@tensorflow-models/posenet"></script>
+<!-- 
+1. load the Model
+2. Add sample for the squat first, then for the standing
+3. Set the alarm time
+4, Choose your exercise and number of reps
+5. Set the Alarm! -->

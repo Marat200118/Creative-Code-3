@@ -11,25 +11,21 @@ let countdownInterval;
 let requiredReps = 0;
 let selectedExercise = "";
 
+// document.addEventListener("DOMContentLoaded", function () {
+//   const activityItems = document.querySelectorAll(".activity-item");
 
-document.addEventListener("DOMContentLoaded", function () {
-  // Get all activity items
-  const activityItems = document.querySelectorAll(".activity-item");
+//   activityItems.forEach((item) => {
+//     item.addEventListener("click", function () {
+//       activityItems.forEach((innerItem) =>
+//         innerItem.classList.remove("active")
+//       );
 
-  activityItems.forEach((item) => {
-    item.addEventListener("click", function () {
-      // Remove active class from all items
-      activityItems.forEach((innerItem) =>
-        innerItem.classList.remove("active")
-      );
-      // Add active class to clicked item
-      this.classList.add("active");
-      // Update the hidden select input value
-      document.getElementById("exerciseChoice").value =
-        this.querySelector("h3").innerText.toLowerCase();
-    });
-  });
-});
+//       this.classList.add("active");
+//       document.getElementById("exerciseChoice").value =
+//         this.querySelector("h3").innerText.toLowerCase();
+//     });
+//   });
+// });
 
 const init = async () => {
   knnClassifier = ml5.KNNClassifier();
@@ -84,14 +80,14 @@ const classify = () => {
 };
 
 const createButtons = () => {
-  document.getElementById("alarmTime").addEventListener("change", setAlarm);
+  document.querySelector("#alarmTime").addEventListener("change", setAlarm);
   document
-    .getElementById("addClassA")
+    .querySelector("#addClassA")
     .addEventListener("click", () => addData("A"));
   document
-    .getElementById("addClassB")
+    .querySelector("#addClassB")
     .addEventListener("click", () => addData("B"));
-  document.getElementById("buttonPredict").addEventListener("click", () => {
+  document.querySelector("#buttonPredict").addEventListener("click", () => {
     if (
       knnClassifier.getCountByLabel()["A"] &&
       knnClassifier.getCountByLabel()["B"]
@@ -103,15 +99,15 @@ const createButtons = () => {
       );
     }
   });
-  // document.getElementById("clearAll").addEventListener("click", clearAllLabels);
+
   document
-    .getElementById("saveModel")
+    .querySelector("#saveModel")
     .addEventListener("click", () => knnClassifier.save());
-  document.getElementById("loadModel").addEventListener("click", () => {
+  document.querySelector("#loadModel").addEventListener("click", () => {
     knnClassifier.load("myKNN.json", () => {
       console.log("Model loaded successfully");
       updateCounts();
-      classify();
+      setTimeout(classify, 1000);
     });
   });
 };
@@ -135,7 +131,8 @@ const gotResults = (error, result) => {
   ) {
     squatState = "standing";
     squatCount++;
-    document.querySelector("#squatCounter").textContent = squatCount;
+    updateSquatDisplay();
+    // document.querySelector("#squatCounter").textContent = squatCount;
   } else if (
     squatState === undefined &&
     result.confidencesByLabel["A"] >= 0.95
@@ -153,12 +150,20 @@ const gotResults = (error, result) => {
   classify();
 };
 
+const updateSquatDisplay = () => {
+  const squatCounter = document.querySelector("#squatCounter");
+  squatCounter.textContent = `${squatCount}/${requiredReps}`;
+  if (squatCount < requiredReps) {
+    squatCounter.style.color = "red";
+  } else {
+    squatCounter.style.color = "green";
+  }
+};
+
 const updateCounts = () => {
   const counts = knnClassifier.getCountByLabel();
-  document.getElementById("exampleA").textContent = counts["A"] || 0;
-  document.getElementById("exampleB").textContent = counts["B"] || 0;
-  // document.getElementById("exampleC").textContent = counts["C"] || 0;
-  // document.getElementById("exampleD").textContent = counts["D"] || 0;
+  document.querySelector("#exampleA").textContent = counts["A"] || 0;
+  document.querySelector("#exampleB").textContent = counts["B"] || 0;
 };
 
 const clearAllLabels = () => {
@@ -194,33 +199,34 @@ const drawKeypoints = () => {
 
 const checkExerciseCompletion = () => {
   if (selectedExercise === "squat" && squatCount >= requiredReps) {
-    document.getElementById("alarmSound").pause();
-    document.getElementById("alarmSound").currentTime = 0;
+    document.querySelector("#alarmSound").pause();
+    document.querySelector("#alarmSound").currentTime = 0;
     requiredReps = 0;
     squatCount = 0;
+    updateSquatDisplay();
     document.querySelector("#squatCounter").textContent = 0;
   }
 };
 
 const updateConfidenceDisplays = (result) => {
   document.querySelector("#result").textContent = result.label;
-  document.querySelector("#confidence").textContent = `${(
+  document.querySelector(".confidence").textContent = `${(
     result.confidencesByLabel[result.label] * 100
   ).toFixed(2)}%`;
-  document.getElementById("confidenceA").textContent = `${(
+  document.querySelector(".confidenceA").textContent = `${(
     result.confidencesByLabel["A"] * 100
   ).toFixed(2)}%`;
-  document.getElementById("confidenceB").textContent = `${(
+  document.querySelector(".confidenceB").textContent = `${(
     result.confidencesByLabel["B"] * 100
   ).toFixed(2)}%`;
 };
 
 const setAlarm = () => {
-  const alarmInput = document.getElementById("alarmTime");
+  const alarmInput = document.querySelector("#alarmTime");
   const alarmTime = new Date();
   const [hour, minute] = alarmInput.value.split(":").map(Number);
-  const exerciseChoice = document.getElementById("exerciseChoice").value;
-  const repetitionCount = document.getElementById("repetitionCount").value;
+  const exerciseChoice = document.querySelector("#exerciseChoice").value;
+  const repetitionCount = document.querySelector("#repetitionCount").value;
 
   selectedExercise = exerciseChoice;
   requiredReps = parseInt(repetitionCount);
@@ -259,7 +265,7 @@ const setAlarm = () => {
 
   countdownInterval = setInterval(displayTimeUntilAlarm, 1000);
 
-  const feedback = document.getElementById("feedback");
+  const feedback = document.querySelector("#feedback");
   feedback.style.display = "block";
   setTimeout(() => {
     feedback.style.display = "none";
@@ -273,9 +279,10 @@ const setAlarm = () => {
   }
 
   alarmTimeout = setTimeout(() => {
-    const alarmSound = document.getElementById("alarmSound");
+    const alarmSound = document.querySelector("#alarmSound");
     alarmSound.play();
   }, durationUntilAlarm);
+  updateSquatDisplay();
 };
 
 init();

@@ -128,6 +128,10 @@ label {
   display: none;
 }
 
+.exercise-name {
+  font-weight: 800;
+  font-size: 1.2rem;
+}
 
 .alarm label {
     display: block;
@@ -162,8 +166,12 @@ label {
 
 #squatCounter {
   font-size: 1.5rem;
-  font-weight: 700;
   color: red;
+}
+
+.squat-count {
+  font-weight: 700;
+  font-size: 1.3rem;
 }
 
 .alarm-section {

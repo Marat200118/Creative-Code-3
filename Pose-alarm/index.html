@@ -35,8 +35,6 @@
           <label for="alarmTime">Alarm Time:</label>
           <input type="time" id="alarmTime">
         </div>
-
-
         <div class="alarm-section">
           <select id="exerciseChoice">
             <option value="squat">Squat</option>
@@ -62,7 +60,7 @@
             <img src="./assets/squat.png" alt="squat">
           </div>
           <div class="activity-item-text">
-            <h3>Squat</h3>
+            <h3 class="exercise-name">Squat</h3>
             <p>The squat exercise involves lowering your body by bending your knees and hips, then returning to a
               standing position.</p>
           </div>
@@ -70,12 +68,12 @@
             <div class="activity-button-set">
               <button id="addClassA">Add to Class "Squat"</button>
               <p><span id="exampleA">0</span> "Squat" examples</p>
-              <p>| Confidence in "Squat" is: <span id="confidenceA">0</span></p>
+              <p>| Confidence in "Squat" is: <span class="confidenceA">0</span></p>
             </div>
             <div class="activity-button-set">
               <button id="addClassB">Add to Class "Standing"</button>
               <p><span id="exampleB">0</span> "Standing" examples</p>
-              <p>| Confidence in "Standing" is: <span id="confidenceB">0</span></p>
+              <p>| Confidence in "Standing" is: <span class="confidenceB">0</span></p>
             </div>
           </div>
         </div>
@@ -84,7 +82,7 @@
             <img src="./assets/jump.png" alt="jump">
           </div>
           <div class="activity-item-text">
-            <h3>Jumps</h3>
+            <h3 class="exercise-name">Jumps</h3>
             <p>Jumps with hands and legs to the sides, after that, returning to the standing position.</p>
           </div>
           <h2 class="inDevelopment">In Development</h2>
@@ -97,16 +95,17 @@
         <video id="video" width="640" height="480" autoplay playsinline></video>
         <canvas id="canvas" width="640" height="480"></canvas>
       </div>
-      <div>
+      <div class="squat-count">
         Squat Count: <span id="squatCounter">0</span>
       </div>
+
       <button id="buttonPredict">Start predicting!</button>
       <button id="saveModel">Save Model</button>
       <button id="loadModel">Load Model</button>
 
       <p>
         KNN Classifier labeled this as Class: <span id="result">...</span>
-        with a confidence of <span id="confidence">...</span>
+        with a confidence of <span class="confidence">...</span>
       </p>
     </div>
   </div>

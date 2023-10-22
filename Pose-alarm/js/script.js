@@ -11,6 +11,26 @@ let countdownInterval;
 let requiredReps = 0;
 let selectedExercise = "";
 
+
+document.addEventListener("DOMContentLoaded", function () {
+  // Get all activity items
+  const activityItems = document.querySelectorAll(".activity-item");
+
+  activityItems.forEach((item) => {
+    item.addEventListener("click", function () {
+      // Remove active class from all items
+      activityItems.forEach((innerItem) =>
+        innerItem.classList.remove("active")
+      );
+      // Add active class to clicked item
+      this.classList.add("active");
+      // Update the hidden select input value
+      document.getElementById("exerciseChoice").value =
+        this.querySelector("h3").innerText.toLowerCase();
+    });
+  });
+});
+
 const init = async () => {
   knnClassifier = ml5.KNNClassifier();
   video = document.querySelector("#video");
@@ -64,6 +84,7 @@ const classify = () => {
 };
 
 const createButtons = () => {
+  document.getElementById("alarmTime").addEventListener("change", setAlarm);
   document
     .getElementById("addClassA")
     .addEventListener("click", () => addData("A"));
@@ -194,8 +215,6 @@ const updateConfidenceDisplays = (result) => {
   ).toFixed(2)}%`;
 };
 
-init();
-
 const setAlarm = () => {
   const alarmInput = document.getElementById("alarmTime");
   const alarmTime = new Date();
@@ -259,4 +278,4 @@ const setAlarm = () => {
   }, durationUntilAlarm);
 };
 
-document.getElementById("alarmTime").addEventListener("change", setAlarm);
+init();

@@ -7,6 +7,7 @@
   <title>Exercise Alarm Clock</title>
   <script src="https://unpkg.com/ml5@latest/dist/ml5.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.2/FileSaver.min.js"></script>
+  <link rel="stylesheet" href="css/reset.css">
   <link rel="stylesheet" href="css/style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -25,21 +26,30 @@
 
     <div class="current-time">
       <h2></h2>
+      <div id="feedback" class="feedback">Alarm Set!</div>
     </div>
 
-    <div class="alarm">
-      <div id="feedback" class="feedback">Alarm Set!</div>
-      <label for="alarmTime">Alarm Time (24-hour format):</label>
-      <input type="time" id="alarmTime">
-      <audio id="alarmSound" src="./assets/alarm-long.wav" preload="auto"></audio>
-      <select id="exerciseChoice">
-        <option value="squat">Squat</option>
-        <!-- <option value="jump">Jump</option> -->
-      </select>
-      <input type="number" id="repetitionCount" min="1" placeholder="Number of reps">
-      <button onclick="setAlarm()">Set Alarm</button>
+    <div class="alarm-and-button">
+      <div class="alarm">
+        <div class="alarm-section">
+          <label for="alarmTime">Alarm Time:</label>
+          <input type="time" id="alarmTime">
+        </div>
+
+
+        <div class="alarm-section">
+          <select id="exerciseChoice">
+            <option value="squat">Squat</option>
+          </select>
+          <input type="number" id="repetitionCount" min="1" placeholder="Number of reps">
+        </div>
+      </div>
+      <button class="alarm-button" onclick="setAlarm()">Set Alarm</button>
     </div>
+
+    <audio id="alarmSound" src="./assets/alarm-long.wav" preload="auto"></audio>
   </div>
+
 
   <div class="main-container">
     <div class="exercise-and-instructions">
@@ -77,19 +87,7 @@
             <h3>Jumps</h3>
             <p>Jumps with hands and legs to the sides, after that, returning to the standing position.</p>
           </div>
-          <!-- <div class="activity-buttons">
-            <div class="activity-button-set">
-              <button id="addClassC">Add to Class "Jump"</button>
-              <p><span id="exampleC">0</span> "Jump" examples</p>
-              <p>| Confidence in "Jump" is: <span id="confidenceC">0</span></p>
-            </div>
-            <div class="activity-button-set">
-              <button id="addClassD">Add to Class "On Ground"</button>
-              <p><span id="exampleD">0</span> "On Ground" examples</p>
-              <p>| Confidence in "On Ground" is: <span id="confidenceD"></span>
-            </div>
-            <button id="predictJump">Predict Jump</button>
-          </div> -->
+          <h2 class="inDevelopment">In Development</h2>
         </div>
 
       </div>
@@ -126,10 +124,3 @@
 </body>
 
 </html>
-
-<!-- 
-1. load the Model
-2. Add sample for the squat first, then for the standing
-3. Set the alarm time
-4, Choose your exercise and number of reps
-5. Set the Alarm! -->

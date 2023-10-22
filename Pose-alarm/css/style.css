@@ -22,8 +22,8 @@ body {
   display: flex;
   flex-direction: row;
   align-items: center;
-  justify-content: space-around;
-  gap: 15rem;
+  justify-content: space-between;
+  gap: 1rem;
 }
 
 h1 {
@@ -121,10 +121,11 @@ label {
 }
 
 .feedback {
-  padding: 10px;
-  margin-top: 20px;
+  width: 100%;
+  text-align: center;
+  margin-top: 0;
   color: green;
-  display: none; 
+  display: none;
 }
 
 
@@ -163,4 +164,79 @@ label {
   font-size: 1.5rem;
   font-weight: 700;
   color: red;
+}
+
+.alarm-section {
+  display: flex;
+  align-items: baseline;
+  justify-content: flex-end; 
+  gap: 1rem; 
+}
+
+
+.inDevelopment {
+  margin-top: 2rem;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: red;
+}
+
+.alarm {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.alarm input[type="number"] {
+  margin-right: 0;
+  margin-bottom: 10px;
+  display: block;
+}
+
+.alarm-button {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  margin-left: auto;
+}
+
+.alarm-button:hover {
+  background-color: #45a049;
+}
+
+#buttonPredict, #saveModel, #loadModel {
+  background-color: #2196F3;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  margin-top: 10px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+#buttonPredict:hover, #saveModel:hover, #loadModel:hover {
+  background-color: #1976D2;
+}
+
+.activity-item.active {
+  background-color: lightgreen;
+  transform: scale(1.05);
+}
+
+.alarm-and-button {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+#exerciseChoice {
+  margin-right: 0;
+  margin-bottom: 10px;
+  display: block;
+  padding: .3rem;
 }

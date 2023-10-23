@@ -126,6 +126,7 @@ label {
   margin-top: 0;
   color: green;
   display: none;
+  transition: opacity 0.3s ease;
 }
 
 .exercise-name {
@@ -134,30 +135,30 @@ label {
 }
 
 .alarm label {
-    display: block;
-    margin-bottom: 10px;
+  display: block;
+  margin-bottom: 10px;
 }
 
 .alarm input {
-    padding: 5px 10px;
-    font-size: 1rem;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    margin-right: 10px;
+  padding: 5px 10px;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  margin-right: 10px;
 }
 
 .instructions-container {
-    background-color: #e8e8e8;
-    padding: 20px;
-    margin-top: 30px;
-    border-radius: 8px;
-    box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.1);
+  background-color: #e8e8e8;
+  padding: 20px;
+  margin-top: 30px;
+  border-radius: 8px;
+  box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.1);
 }
 
 .instruction-list {
-    font-family: var(--montserrat);
-    padding-left: 20px;
-    margin-top: 15px;
+  font-family: var(--montserrat);
+  padding-left: 20px;
+  margin-top: 15px;
 }
 
 .instruction-list li {
@@ -180,7 +181,6 @@ label {
   justify-content: flex-end; 
   gap: 1rem; 
 }
-
 
 .inDevelopment {
   margin-top: 2rem;
@@ -207,6 +207,7 @@ label {
   border: none;
   padding: 10px 15px;
   font-size: 1rem;
+  border-radius: .3rem;
   cursor: pointer;
   transition: background-color 0.3s ease;
   margin-left: auto;
@@ -224,6 +225,7 @@ label {
   margin-top: 10px;
   font-size: 1rem;
   cursor: pointer;
+  border-radius: .3rem;
   transition: background-color 0.3s ease;
 }
 

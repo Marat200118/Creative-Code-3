@@ -11,22 +11,6 @@ let countdownInterval;
 let requiredReps = 0;
 let selectedExercise = "";
 
-// document.addEventListener("DOMContentLoaded", function () {
-//   const activityItems = document.querySelectorAll(".activity-item");
-
-//   activityItems.forEach((item) => {
-//     item.addEventListener("click", function () {
-//       activityItems.forEach((innerItem) =>
-//         innerItem.classList.remove("active")
-//       );
-
-//       this.classList.add("active");
-//       document.getElementById("exerciseChoice").value =
-//         this.querySelector("h3").innerText.toLowerCase();
-//     });
-//   });
-// });
-
 const init = async () => {
   knnClassifier = ml5.KNNClassifier();
   video = document.querySelector("#video");
@@ -132,7 +116,6 @@ const gotResults = (error, result) => {
     squatState = "standing";
     squatCount++;
     updateSquatDisplay();
-    // document.querySelector("#squatCounter").textContent = squatCount;
   } else if (
     squatState === undefined &&
     result.confidencesByLabel["A"] >= 0.95
@@ -201,6 +184,8 @@ const checkExerciseCompletion = () => {
   if (selectedExercise === "squat" && squatCount >= requiredReps) {
     document.querySelector("#alarmSound").pause();
     document.querySelector("#alarmSound").currentTime = 0;
+    document.querySelector(".current-time h2").innerText = "ALARM TURNED OFF!";
+    document.querySelector(".current-time h2").style.color = "green";
     requiredReps = 0;
     squatCount = 0;
     updateSquatDisplay();
@@ -209,10 +194,6 @@ const checkExerciseCompletion = () => {
 };
 
 const updateConfidenceDisplays = (result) => {
-  document.querySelector("#result").textContent = result.label;
-  document.querySelector(".confidence").textContent = `${(
-    result.confidencesByLabel[result.label] * 100
-  ).toFixed(2)}%`;
   document.querySelector(".confidenceA").textContent = `${(
     result.confidencesByLabel["A"] * 100
   ).toFixed(2)}%`;
@@ -245,6 +226,7 @@ const setAlarm = () => {
     const difference = alarmTime - currentTime;
     if (difference <= 0) {
       document.querySelector(".current-time h2").innerText = "ALARM!";
+      document.querySelector(".current-time h2").style.color = "red";
       clearInterval(countdownInterval);
       return;
     }
@@ -255,7 +237,6 @@ const setAlarm = () => {
     const timeString = `${String(hours).padStart(2, "0")}:${String(
       minutes
     ).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
-
     document.querySelector(".current-time h2").innerText = timeString;
   };
 
@@ -264,7 +245,6 @@ const setAlarm = () => {
   }
 
   countdownInterval = setInterval(displayTimeUntilAlarm, 1000);
-
   const feedback = document.querySelector("#feedback");
   feedback.style.display = "block";
   setTimeout(() => {
@@ -272,7 +252,6 @@ const setAlarm = () => {
   }, 3000);
 
   const durationUntilAlarm = alarmTime - currentTime;
-  console.log(durationUntilAlarm);
 
   if (alarmTimeout) {
     clearTimeout(alarmTimeout);

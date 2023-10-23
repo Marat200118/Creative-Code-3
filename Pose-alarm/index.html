@@ -11,24 +11,21 @@
   <link rel="stylesheet" href="css/style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="icon" href="https://fav.farm/⏰" />
   <link
     href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,500;0,600;0,700;0,800;1,600;1,700&family=Oswald:wght@200;300;400;500;600;700&display=swap"
     rel="stylesheet">
-
 </head>
 
 <body>
-
   <div class="header-container">
     <div class="heading-logo">
       <h1>Get up, you lazy Fu*k</h1>
     </div>
-
     <div class="current-time">
       <h2></h2>
       <div id="feedback" class="feedback">Alarm Set!</div>
     </div>
-
     <div class="alarm-and-button">
       <div class="alarm">
         <div class="alarm-section">
@@ -44,10 +41,8 @@
       </div>
       <button class="alarm-button" onclick="setAlarm()">Set Alarm</button>
     </div>
-
     <audio id="alarmSound" src="./assets/alarm-long.wav" preload="auto"></audio>
   </div>
-
 
   <div class="main-container">
     <div class="exercise-and-instructions">
@@ -87,9 +82,9 @@
           </div>
           <h2 class="inDevelopment">In Development</h2>
         </div>
-
       </div>
     </div>
+
     <div class="video-and-model">
       <div class="grid">
         <video id="video" width="640" height="480" autoplay playsinline></video>
@@ -102,24 +97,19 @@
       <button id="buttonPredict">Start predicting!</button>
       <button id="saveModel">Save Model</button>
       <button id="loadModel">Load Model</button>
-
-      <p>
-        KNN Classifier labeled this as Class: <span id="result">...</span>
-        with a confidence of <span class="confidence">...</span>
-      </p>
     </div>
   </div>
+
   <div class="instructions-container">
     <h2>How to Use:</h2>
     <ol class="instruction-list">
-      <li>Load the Model by clicking on the "Load Model" button.</li>
-      <li>Add a sample for the squat <strong>first</strong>, then for the standing. Use the "Add to Class" buttons.</li>
-      <li>Set your desired alarm time using the provided input.</li>
-      <li>Choose your exercise and number of repetitions.</li>
-      <li>Click on "Set Alarm" to activate your exercise alarm.</li>
+      <li>1. Load the Model by clicking on the "Load Model" button.</li>
+      <li>2. Add a sample for the squat <strong>first</strong>, then for the standing. Use the "Add to Class" buttons.</li>
+      <li>3. Set your desired alarm time using the provided input.</li>
+      <li>4. Choose your exercise and number of repetitions.</li>
+      <li>5. Click on "Set Alarm" to activate your exercise alarm.</li>
     </ol>
   </div>
   <script src="js/script.js"></script>
 </body>
-
 </html>
